@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Elina Rose{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="nav-logo">Elina Rose</a>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="{% url 'home' %}" class="nav-link">Home</a></li>
+                <li><a href="{% url 'about' %}" class="nav-link">About</a></li>
+                <li><a href="{% url 'gallery' %}" class="nav-link">Gallery</a></li>
+                <li><a href="{% url 'blog' %}" class="nav-link">Blog</a></li>
+                <li><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="message message-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Elina Rose</h3>
+                    <p>Sharing my journey, one moment at a time.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'about' %}">About</a></li>
+                        <li><a href="{% url 'gallery' %}">Gallery</a></li>
+                        <li><a href="{% url 'blog' %}">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link" aria-label="Instagram">Instagram</a>
+                        <a href="#" class="social-link" aria-label="Twitter">Twitter</a>
+                        <a href="{% url 'contact' %}" class="social-link">Contact</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} Elina Rose. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

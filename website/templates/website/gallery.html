@@ -1,0 +1,116 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Gallery - Elina Rose{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Gallery</h1>
+        <p>Captured moments and memories</p>
+    </div>
+</section>
+
+<section class="gallery-section">
+    <div class="container">
+        {% if images %}
+        <div class="gallery-grid-full" id="gallery-grid">
+            {% for image in images %}
+            <div class="gallery-item-full" data-aos="fade-up">
+                <img src="{{ image.image.url }}" alt="{{ image.title }}" loading="lazy">
+                <div class="gallery-overlay-full">
+                    <div class="gallery-info">
+                        <h3>{{ image.title|default:"Special Moment" }}</h3>
+                        {% if image.description %}
+                        <p>{{ image.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-content">
+            <p>Gallery is being updated. Check back soon!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<div class="lightbox" id="lightbox">
+    <span class="lightbox-close" id="lightbox-close">&times;</span>
+    <img src="" alt="" id="lightbox-image">
+    <div class="lightbox-nav">
+        <button class="lightbox-prev" id="lightbox-prev">‹</button>
+        <button class="lightbox-next" id="lightbox-next">›</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Lightbox functionality
+    const galleryItems = document.querySelectorAll('.gallery-item-full');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxClose = document.getElementById('lightbox-close');
+    const lightboxPrev = document.getElementById('lightbox-prev');
+    const lightboxNext = document.getElementById('lightbox-next');
+    
+    let currentImageIndex = 0;
+    const images = Array.from(galleryItems);
+    
+    galleryItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+            currentImageIndex = index;
+            openLightbox();
+        });
+    });
+    
+    function openLightbox() {
+        lightbox.style.display = 'flex';
+        updateLightboxImage();
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLightbox() {
+        lightbox.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    function updateLightboxImage() {
+        const img = images[currentImageIndex].querySelector('img');
+        lightboxImage.src = img.src;
+        lightboxImage.alt = img.alt;
+    }
+    
+    function nextImage() {
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        updateLightboxImage();
+    }
+    
+    function prevImage() {
+        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+        updateLightboxImage();
+    }
+    
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxNext.addEventListener('click', nextImage);
+    lightboxPrev.addEventListener('click', prevImage);
+    
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (lightbox.style.display === 'flex') {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
+        }
+    });
+</script>
+{% endblock %}
+

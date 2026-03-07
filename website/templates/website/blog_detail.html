@@ -1,0 +1,92 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - Elina Rose{% endblock %}
+
+{% block content %}
+<article class="blog-detail">
+    <div class="container">
+        <div class="blog-detail-header">
+            <a href="{% url 'blog' %}" class="back-link">← Back to Blog</a>
+            <div class="blog-meta">
+                <span class="blog-date">{{ post.created_at|date:"F d, Y" }}</span>
+            </div>
+            <h1>{{ post.title }}</h1>
+        </div>
+        
+        {% if post.image %}
+        <div class="blog-detail-image">
+            <img src="{{ post.image.url }}" alt="{{ post.title }}">
+        </div>
+        {% endif %}
+        
+        <div class="blog-detail-content">
+            {{ post.content|linebreaks }}
+        </div>
+        
+        <div class="blog-detail-footer">
+            <div class="share-buttons">
+                <span>Share this post:</span>
+                <a href="#" class="share-btn" data-platform="twitter">Twitter</a>
+                <a href="#" class="share-btn" data-platform="facebook">Facebook</a>
+                <a href="#" class="share-btn" data-platform="copy">Copy Link</a>
+            </div>
+        </div>
+    </div>
+</article>
+
+{% if recent_posts %}
+<section class="related-posts">
+    <div class="container">
+        <h2 class="section-title">More Posts</h2>
+        <div class="posts-grid">
+            {% for recent_post in recent_posts %}
+            <article class="post-card">
+                {% if recent_post.image %}
+                <div class="post-image">
+                    <a href="{% url 'blog_detail' recent_post.id %}">
+                        <img src="{{ recent_post.image.url }}" alt="{{ recent_post.title }}">
+                    </a>
+                </div>
+                {% endif %}
+                <div class="post-content">
+                    <h3><a href="{% url 'blog_detail' recent_post.id %}">{{ recent_post.title }}</a></h3>
+                    <p class="post-excerpt">{{ recent_post.content|truncatewords:20 }}</p>
+                    <a href="{% url 'blog_detail' recent_post.id %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Share functionality
+    const shareButtons = document.querySelectorAll('.share-btn');
+    const currentUrl = window.location.href;
+    
+    shareButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const platform = btn.dataset.platform;
+            
+            if (platform === 'copy') {
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = 'Copy Link';
+                    }, 2000);
+                });
+            } else if (platform === 'twitter') {
+                window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}`, '_blank');
+            } else if (platform === 'facebook') {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank');
+            }
+        });
+    });
+</script>
+{% endblock %}
+

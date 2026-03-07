@@ -1,0 +1,108 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Elina Rose - Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title animate-fade-in">Hi, I'm Elina Rose</h1>
+            <p class="hero-subtitle animate-fade-in-delay">Welcome to my world</p>
+            <p class="hero-description animate-fade-in-delay-2">
+                I'm passionate about sharing authentic moments, inspiring stories, and connecting with amazing people like you.
+            </p>
+            <div class="hero-buttons animate-fade-in-delay-3">
+                <a href="{% url 'about' %}" class="btn btn-primary">Get to Know Me</a>
+                <a href="{% url 'gallery' %}" class="btn btn-secondary">View Gallery</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="image-container">
+                <img src="{% static 'images/hero-image.jpg' %}" alt="Elina Rose" class="hero-img" id="hero-image">
+            </div>
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <span>Scroll</span>
+        <div class="mouse"></div>
+    </div>
+</section>
+
+<section class="featured-section">
+    <div class="container">
+        <h2 class="section-title">Latest Posts</h2>
+        <div class="posts-grid">
+            {% for post in featured_posts %}
+            <article class="post-card">
+                {% if post.image %}
+                <div class="post-image">
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}">
+                </div>
+                {% endif %}
+                <div class="post-content">
+                    <h3><a href="{% url 'blog_detail' post.id %}">{{ post.title }}</a></h3>
+                    <p class="post-excerpt">{{ post.content|truncatewords:20 }}</p>
+                    <a href="{% url 'blog_detail' post.id %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+            {% empty %}
+            <p class="no-content">No posts yet. Check back soon!</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="gallery-preview">
+    <div class="container">
+        <h2 class="section-title">Featured Moments</h2>
+        <div class="gallery-grid">
+            {% for image in featured_gallery %}
+            <div class="gallery-item">
+                <img src="{{ image.image.url }}" alt="{{ image.title }}">
+                <div class="gallery-overlay">
+                    <p>{{ image.title|default:"Special Moment" }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p class="no-content">Gallery coming soon!</p>
+            {% endfor %}
+        </div>
+        <div class="text-center" style="margin-top: 2rem;">
+            <a href="{% url 'gallery' %}" class="btn btn-primary">View Full Gallery</a>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Let's Connect</h2>
+            <p>I'd love to hear from you! Whether you have a question, want to collaborate, or just say hello.</p>
+            <a href="{% url 'contact' %}" class="btn btn-primary">Get In Touch</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Hero image rotation effect
+    const heroImage = document.getElementById('hero-image');
+    const imageSources = [
+        "{% static 'images/hero-image.jpg' %}",
+        // Add more image sources here if available
+    ];
+    
+    let currentImageIndex = 0;
+    
+    // Parallax effect on scroll
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        if (heroImage) {
+            heroImage.style.transform = `translateY(${scrolled * 0.5}px)`;
+        }
+    });
+</script>
+{% endblock %}
+

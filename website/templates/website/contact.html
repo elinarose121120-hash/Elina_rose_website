@@ -1,0 +1,98 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Contact - Elina Rose{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Get In Touch</h1>
+        <p>I'd love to hear from you</p>
+    </div>
+</section>
+
+<section class="contact-section">
+    <div class="container">
+        <div class="contact-content">
+            <div class="contact-info">
+                <h2>Let's Connect</h2>
+                <p>
+                    Whether you have a question, want to collaborate, or just want to say hello, 
+                    I'm always happy to hear from you. Fill out the form below or reach out through 
+                    social media.
+                </p>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <span class="contact-icon">📧</span>
+                        <div>
+                            <h4>Email</h4>
+                            <p>hello@elinarose.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">💬</span>
+                        <div>
+                            <h4>Social Media</h4>
+                            <p>@elinarose</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="POST" class="contact-form" id="contact-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="6" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation and animation
+    const form = document.getElementById('contact-form');
+    
+    form.addEventListener('submit', function(e) {
+        const inputs = form.querySelectorAll('input, textarea');
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('error');
+            } else {
+                input.classList.remove('error');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    // Remove error class on input
+    form.querySelectorAll('input, textarea').forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('error');
+        });
+    });
+</script>
+{% endblock %}
+

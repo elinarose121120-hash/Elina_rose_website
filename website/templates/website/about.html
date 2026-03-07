@@ -1,0 +1,83 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}About - Elina Rose{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>About Me</h1>
+        <p>Get to know the person behind the lens</p>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="container">
+        <div class="about-content">
+            <div class="about-image">
+                <img src="{% static 'images/about-image.jpg' %}" alt="Elina Rose" class="about-img">
+            </div>
+            <div class="about-text">
+                <h2>Hello, I'm Elina</h2>
+                <p>
+                    Welcome to my corner of the internet! I'm so glad you're here. I'm a creative soul who loves 
+                    capturing life's beautiful moments and sharing stories that matter.
+                </p>
+                <p>
+                    Through this space, I share my journey, experiences, and the things that inspire me. 
+                    From fashion and lifestyle to travel and everyday adventures, I believe in living authentically 
+                    and finding beauty in the ordinary.
+                </p>
+                <p>
+                    When I'm not creating content, you'll find me exploring new places, trying out new recipes, 
+                    reading a good book, or spending time with loved ones. Life is about balance, and I'm here 
+                    to share that journey with you.
+                </p>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <h3>100+</h3>
+                        <p>Moments Captured</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>50+</h3>
+                        <p>Stories Shared</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>24/7</h3>
+                        <p>Living Authentically</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="values-section">
+    <div class="container">
+        <h2 class="section-title">What I Believe In</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">✨</div>
+                <h3>Authenticity</h3>
+                <p>Being true to myself and sharing real, unfiltered moments.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">💝</div>
+                <h3>Connection</h3>
+                <p>Building meaningful relationships with my community.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">🌟</div>
+                <h3>Growth</h3>
+                <p>Continuously learning and evolving as a person.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">🌈</div>
+                <h3>Positivity</h3>
+                <p>Spreading joy and inspiration wherever I go.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
