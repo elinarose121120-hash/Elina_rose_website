@@ -4,7 +4,7 @@ Tests model creation, relationships, and methods
 """
 from django.test import TestCase
 from django.contrib.auth.models import User
-from website.models import UserProfile, Post, GalleryImage, ContactMessage
+from website.models import UserProfile, Post, GalleryImage, ContactMessage, GalleryLike, GalleryComment
 from django.utils import timezone
 
 
@@ -110,4 +110,98 @@ class ModelTests(TestCase):
         self.assertTrue(user.profile.is_admin())
         self.assertFalse(user.profile.is_user())
         self.assertFalse(user.profile.is_manager())
+    
+    def test_gallery_like_model_creation(self):
+        """Test GalleryLike model creation"""
+        user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        like = GalleryLike.objects.create(
+            gallery_item=gallery_item,
+            user=user
+        )
+        self.assertIsNotNone(like.created_at)
+        self.assertEqual(like.gallery_item, gallery_item)
+        self.assertEqual(like.user, user)
+    
+    def test_gallery_like_unique_constraint(self):
+        """Test GalleryLike unique constraint prevents duplicate likes"""
+        user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        # Create first like
+        GalleryLike.objects.create(gallery_item=gallery_item, user=user)
+        # Try to create duplicate like - should raise IntegrityError
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            GalleryLike.objects.create(gallery_item=gallery_item, user=user)
+    
+    def test_gallery_comment_model_creation(self):
+        """Test GalleryComment model creation"""
+        user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        comment = GalleryComment.objects.create(
+            gallery_item=gallery_item,
+            user=user,
+            text='This is a test comment'
+        )
+        self.assertIsNotNone(comment.created_at)
+        self.assertEqual(comment.gallery_item, gallery_item)
+        self.assertEqual(comment.user, user)
+        self.assertEqual(comment.text, 'This is a test comment')
+    
+    def test_gallery_like_relationship(self):
+        """Test GalleryLike relationship with GalleryImage"""
+        user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        GalleryLike.objects.create(gallery_item=gallery_item, user=user)
+        # Test reverse relationship
+        self.assertEqual(gallery_item.likes.count(), 1)
+        self.assertEqual(gallery_item.likes.first().user, user)
+    
+    def test_gallery_comment_relationship(self):
+        """Test GalleryComment relationship with GalleryImage"""
+        user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        GalleryComment.objects.create(
+            gallery_item=gallery_item,
+            user=user,
+            text='Test comment'
+        )
+        # Test reverse relationship
+        self.assertEqual(gallery_item.comments.count(), 1)
+        self.assertEqual(gallery_item.comments.first().user, user)
 

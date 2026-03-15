@@ -5,20 +5,36 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from .models import Post, GalleryImage, ContactMessage, UserProfile
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import Post, GalleryImage, ContactMessage, UserProfile, GalleryLike, GalleryComment
 from .decorators import admin_required, manager_required
 
 
 def home(request):
-    featured_posts = Post.objects.filter(published=True)[:3]
-    # Filter featured gallery items that have images (for homepage preview)
-    # Only get items with content_type='image' and that actually have an image file
+    # Latest Posts: Get 10 most recent images from GalleryImage
+    # Filter for items with content_type='image' and that have an image file
+    all_images = GalleryImage.objects.filter(
+        content_type='image'
+    ).exclude(
+        image__isnull=True
+    ).exclude(
+        image=''
+    )
+    
+    latest_images = [
+        item for item in all_images[:15]
+        if item.image  # Double-check that image exists
+    ][:10]  # Ensure we get at least 10 if available
+    
+    # Featured Moments: Get recent images (not just featured ones) for homepage preview
     featured_gallery = [
-        item for item in GalleryImage.objects.filter(featured=True, content_type='image')[:6]
+        item for item in all_images[:10]
         if item.image  # Only include items that have an image file
-    ]
+    ][:6]  # Get up to 6 items
+    
     return render(request, 'website/home.html', {
-        'featured_posts': featured_posts,
+        'latest_images': latest_images,
         'featured_gallery': featured_gallery,
     })
 
@@ -29,6 +45,15 @@ def about(request):
 
 def gallery(request):
     gallery_items = GalleryImage.objects.all()
+    # Get like and comment counts for each item (visible to everyone)
+    for item in gallery_items:
+        item.like_count = item.likes.count()
+        item.comment_count = item.comments.count()
+        # Only check if user liked if they're authenticated
+        if request.user.is_authenticated:
+            item.is_liked = GalleryLike.objects.filter(gallery_item=item, user=request.user).exists()
+        else:
+            item.is_liked = False
     return render(request, 'website/gallery.html', {'gallery_items': gallery_items})
 
 
@@ -209,4 +234,82 @@ def manager_dashboard(request):
     # Get recent uploads by this manager
     recent_uploads = GalleryImage.objects.filter(uploaded_by=request.user)[:10]
     return render(request, 'website/manager_dashboard.html', {'recent_uploads': recent_uploads})
+
+
+@login_required
+@require_POST
+def toggle_like(request, item_id):
+    """Toggle like on a gallery item"""
+    gallery_item = get_object_or_404(GalleryImage, id=item_id)
+    like, created = GalleryLike.objects.get_or_create(
+        gallery_item=gallery_item,
+        user=request.user
+    )
+    
+    if not created:
+        # Unlike - delete the like
+        like.delete()
+        is_liked = False
+    else:
+        is_liked = True
+    
+    like_count = gallery_item.likes.count()
+    
+    return JsonResponse({
+        'success': True,
+        'is_liked': is_liked,
+        'like_count': like_count
+    })
+
+
+@login_required
+@require_POST
+def add_comment(request, item_id):
+    """Add a comment to a gallery item"""
+    gallery_item = get_object_or_404(GalleryImage, id=item_id)
+    text = request.POST.get('text', '').strip()
+    
+    if not text:
+        return JsonResponse({
+            'success': False,
+            'error': 'Comment text is required'
+        }, status=400)
+    
+    comment = GalleryComment.objects.create(
+        gallery_item=gallery_item,
+        user=request.user,
+        text=text
+    )
+    
+    comment_count = gallery_item.comments.count()
+    
+    return JsonResponse({
+        'success': True,
+        'comment': {
+            'id': comment.id,
+            'text': comment.text,
+            'user': comment.user.username,
+            'created_at': comment.created_at.strftime('%b %d, %Y %I:%M %p')
+        },
+        'comment_count': comment_count
+    })
+
+
+def get_comments(request, item_id):
+    """Get all comments for a gallery item"""
+    gallery_item = get_object_or_404(GalleryImage, id=item_id)
+    comments = gallery_item.comments.all()[:10]  # Get latest 10 comments
+    
+    comments_data = [{
+        'id': comment.id,
+        'text': comment.text,
+        'user': comment.user.username,
+        'created_at': comment.created_at.strftime('%b %d, %Y %I:%M %p')
+    } for comment in comments]
+    
+    return JsonResponse({
+        'success': True,
+        'comments': comments_data,
+        'comment_count': gallery_item.comments.count()
+    })
 

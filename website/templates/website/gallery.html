@@ -16,7 +16,7 @@
         {% if gallery_items %}
         <div class="gallery-grid-full" id="gallery-grid">
             {% for item in gallery_items %}
-            <div class="gallery-item-full" data-aos="fade-up" data-content-type="{{ item.content_type }}">
+            <div class="gallery-item-full" data-aos="fade-up" data-content-type="{{ item.content_type }}" data-item-id="{{ item.id }}">
                 {% if item.content_type == 'video' and item.video %}
                     <video class="gallery-media" controls preload="metadata">
                         <source src="{{ item.video.url }}" type="video/mp4">
@@ -36,6 +36,20 @@
                         <p>{{ item.description }}</p>
                         {% endif %}
                     </div>
+                </div>
+                <div class="gallery-interactions">
+                    <button class="like-btn {% if user.is_authenticated and item.is_liked %}liked{% endif %} {% if not user.is_authenticated %}disabled{% endif %}" 
+                            data-item-id="{{ item.id }}" 
+                            {% if not user.is_authenticated %}title="Please login to like"{% endif %}>
+                        <span class="like-icon">❤️</span>
+                        <span class="like-count">{{ item.like_count }}</span>
+                    </button>
+                    <button class="comment-btn {% if not user.is_authenticated %}disabled{% endif %}" 
+                            data-item-id="{{ item.id }}"
+                            {% if not user.is_authenticated %}title="Please login to comment"{% endif %}>
+                        <span class="comment-icon">💬</span>
+                        <span class="comment-count">{{ item.comment_count }}</span>
+                    </button>
                 </div>
             </div>
             {% endfor %}
@@ -59,10 +73,65 @@
         <button class="lightbox-next" id="lightbox-next">›</button>
     </div>
 </div>
+
+<!-- Comment Modal -->
+<div class="comment-modal" id="comment-modal">
+    <div class="comment-modal-content">
+        <div class="comment-modal-header">
+            <h3>Comments</h3>
+            <button class="comment-modal-close" id="comment-modal-close">&times;</button>
+        </div>
+        <div class="comment-list" id="comment-list">
+            <!-- Comments will be loaded here -->
+        </div>
+        <div class="comment-form-container">
+            {% if user.is_authenticated %}
+            <form class="comment-form" id="comment-form">
+                {% csrf_token %}
+                <input type="hidden" id="comment-item-id" name="item_id">
+                <div class="comment-input-wrapper">
+                    <textarea id="comment-text" name="text" placeholder="Write a comment..." required></textarea>
+                    <button type="button" class="emoji-toggle-btn" id="emoji-toggle-btn" title="Add emoji">😊</button>
+                </div>
+                <div class="emoji-picker" id="emoji-picker">
+                    <div class="emoji-picker-header">
+                        <span>Emoji</span>
+                        <button type="button" class="emoji-picker-close" id="emoji-picker-close">&times;</button>
+                    </div>
+                    <div class="emoji-grid" id="emoji-grid">
+                        <!-- Emojis will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+            {% else %}
+            <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                <p><a href="{% url 'login' %}?next={{ request.path }}" style="color: var(--primary-color); font-weight: 600;">Login</a> to post comments</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
     // Lightbox functionality
     const galleryItems = document.querySelectorAll('.gallery-item-full');
     const lightbox = document.getElementById('lightbox');
@@ -75,7 +144,11 @@
     const images = Array.from(galleryItems);
     
     galleryItems.forEach((item, index) => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+            // Don't open lightbox if clicking on interaction buttons
+            if (e.target.closest('.gallery-interactions')) {
+                return;
+            }
             currentImageIndex = index;
             openLightbox();
         });
@@ -139,6 +212,228 @@
             if (e.key === 'ArrowLeft') prevImage();
         }
     });
+
+    // Like functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (this.classList.contains('disabled')) {
+                // Redirect to login if not authenticated
+                window.location.href = '{% url "login" %}?next=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+            const itemId = this.getAttribute('data-item-id');
+            toggleLike(itemId, this);
+        });
+    });
+
+    function toggleLike(itemId, btn) {
+        fetch(`/gallery/${itemId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const likeCount = btn.querySelector('.like-count');
+                likeCount.textContent = data.like_count;
+                
+                if (data.is_liked) {
+                    btn.classList.add('liked');
+                } else {
+                    btn.classList.remove('liked');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Comment functionality
+    const commentModal = document.getElementById('comment-modal');
+    const commentModalClose = document.getElementById('comment-modal-close');
+    const commentList = document.getElementById('comment-list');
+    const commentText = document.getElementById('comment-text');
+    const commentItemId = document.getElementById('comment-item-id');
+
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (this.classList.contains('disabled')) {
+                // Redirect to login if not authenticated
+                window.location.href = '{% url "login" %}?next=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+            const itemId = this.getAttribute('data-item-id');
+            openCommentModal(itemId);
+        });
+    });
+
+    function openCommentModal(itemId) {
+        commentItemId.value = itemId;
+        commentModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        loadComments(itemId);
+    }
+
+    function closeCommentModal() {
+        commentModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        commentText.value = '';
+        commentList.innerHTML = '';
+    }
+
+    commentModalClose.addEventListener('click', closeCommentModal);
+    commentModal.addEventListener('click', function(e) {
+        if (e.target === commentModal) {
+            closeCommentModal();
+        }
+    });
+
+    function loadComments(itemId) {
+        fetch(`/gallery/${itemId}/comments/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    commentList.innerHTML = '';
+                    if (data.comments.length === 0) {
+                        commentList.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
+                    } else {
+                        data.comments.forEach(comment => {
+                            const commentDiv = document.createElement('div');
+                            commentDiv.className = 'comment-item';
+                            commentDiv.innerHTML = `
+                                <div class="comment-user">${comment.user}</div>
+                                <div class="comment-text">${comment.text}</div>
+                                <div class="comment-date">${comment.created_at}</div>
+                            `;
+                            commentList.appendChild(commentDiv);
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading comments:', error);
+            });
+    }
+
+    // Emoji picker functionality
+    const emojiToggleBtn = document.getElementById('emoji-toggle-btn');
+    const emojiPicker = document.getElementById('emoji-picker');
+    const emojiPickerClose = document.getElementById('emoji-picker-close');
+    const emojiGrid = document.getElementById('emoji-grid');
+    
+    // Popular Instagram-style emojis
+    const instagramEmojis = [
+        '❤️', '😍', '🔥', '💯', '👍', '😊', '🎉', '✨', '💕', '😘',
+        '😁', '🙌', '👏', '😎', '🤩', '🥰', '😇', '🤗', '😋', '😉',
+        '💖', '💝', '💗', '💓', '💞', '💟', '🌹', '🌺', '🌸', '🌻',
+        '⭐', '🌟', '💫', '⚡', '🌈', '☀️', '🌙', '⭐️', '💎', '🎁',
+        '🎂', '🍰', '🍕', '🍔', '🍟', '🍦', '🍩', '🍪', '☕', '🍷',
+        '✈️', '🏖️', '🌴', '🌊', '⛱️', '🏝️', '🎨', '📸', '🎬', '🎵',
+        '💪', '🏃', '🧘', '🧗', '🏋️', '🤸', '🤾', '🏄', '🏊', '🚴'
+    ];
+    
+    // Populate emoji grid
+    instagramEmojis.forEach(emoji => {
+        const emojiBtn = document.createElement('button');
+        emojiBtn.type = 'button';
+        emojiBtn.className = 'emoji-item';
+        emojiBtn.textContent = emoji;
+        emojiBtn.setAttribute('data-emoji', emoji);
+        emojiBtn.addEventListener('click', function() {
+            insertEmoji(emoji);
+        });
+        emojiGrid.appendChild(emojiBtn);
+    });
+    
+    // Toggle emoji picker
+    if (emojiToggleBtn) {
+        emojiToggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            emojiPicker.classList.toggle('active');
+        });
+    }
+    
+    // Close emoji picker
+    if (emojiPickerClose) {
+        emojiPickerClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            emojiPicker.classList.remove('active');
+        });
+    }
+    
+    // Close emoji picker when clicking outside
+    document.addEventListener('click', function(e) {
+        if (emojiPicker && !emojiPicker.contains(e.target) && !emojiToggleBtn.contains(e.target)) {
+            emojiPicker.classList.remove('active');
+        }
+    });
+    
+    // Insert emoji into textarea
+    function insertEmoji(emoji) {
+        const textarea = document.getElementById('comment-text');
+        if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const before = text.substring(0, start);
+            const after = text.substring(end);
+            textarea.value = before + emoji + after;
+            textarea.focus();
+            // Set cursor position after inserted emoji
+            const newPosition = start + emoji.length;
+            textarea.setSelectionRange(newPosition, newPosition);
+        }
+    }
+
+    const commentForm = document.getElementById('comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const itemId = commentItemId.value;
+            const text = commentText.value.trim();
+
+            if (!text) {
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('text', text);
+            formData.append('csrfmiddlewaretoken', csrftoken);
+
+            fetch(`/gallery/${itemId}/comment/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    commentText.value = '';
+                    loadComments(itemId);
+                    // Update comment count on the gallery item
+                    const commentBtn = document.querySelector(`.comment-btn[data-item-id="${itemId}"]`);
+                    if (commentBtn) {
+                        const commentCount = commentBtn.querySelector('.comment-count');
+                        commentCount.textContent = data.comment_count;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error posting comment:', error);
+            });
+        });
+    }
 </script>
 {% endblock %}
 

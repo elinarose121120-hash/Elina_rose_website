@@ -5,7 +5,7 @@ This ensures all URLs are accessible and return correct status codes
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from website.models import UserProfile, Post, GalleryImage, ContactMessage
+from website.models import UserProfile, Post, GalleryImage, ContactMessage, GalleryLike, GalleryComment
 
 
 class URLTests(TestCase):
@@ -137,4 +137,41 @@ class URLTests(TestCase):
         """Test blog detail URL with invalid post ID"""
         response = self.client.get(reverse('blog_detail', args=[99999]))
         self.assertEqual(response.status_code, 404)
+    
+    def test_toggle_like_url_requires_authentication(self):
+        """Test toggle like URL requires authentication"""
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        response = self.client.post(reverse('toggle_like', args=[gallery_item.id]))
+        self.assertEqual(response.status_code, 302)  # Redirects to login
+    
+    def test_toggle_like_url_requires_post(self):
+        """Test toggle like URL requires POST method"""
+        self.client.login(username='testuser', password='testpass123')
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        response = self.client.get(reverse('toggle_like', args=[gallery_item.id]))
+        self.assertEqual(response.status_code, 405)  # Method not allowed
+    
+    def test_add_comment_url_requires_authentication(self):
+        """Test add comment URL requires authentication"""
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        response = self.client.post(reverse('add_comment', args=[gallery_item.id]))
+        self.assertEqual(response.status_code, 302)  # Redirects to login
+    
+    def test_get_comments_url_public_access(self):
+        """Test get comments URL is publicly accessible"""
+        gallery_item = GalleryImage.objects.create(
+            title='Test Image',
+            content_type='image'
+        )
+        response = self.client.get(reverse('get_comments', args=[gallery_item.id]))
+        self.assertEqual(response.status_code, 200)
 

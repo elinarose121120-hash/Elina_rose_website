@@ -66,14 +66,6 @@ document.querySelectorAll('.post-card, .gallery-item, .value-card, .blog-card').
     observer.observe(el);
 });
 
-// Parallax effect for hero section
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const heroImage = document.querySelector('.hero-img');
-    if (heroImage && scrolled < window.innerHeight) {
-        heroImage.style.transform = `translateY(${scrolled * 0.3}px)`;
-    }
-});
 
 // Form validation enhancement
 const forms = document.querySelectorAll('form');

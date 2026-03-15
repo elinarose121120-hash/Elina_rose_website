@@ -12,6 +12,10 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('signup/', views.signup_view, name='signup'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    # Gallery interactions
+    path('gallery/<int:item_id>/like/', views.toggle_like, name='toggle_like'),
+    path('gallery/<int:item_id>/comment/', views.add_comment, name='add_comment'),
+    path('gallery/<int:item_id>/comments/', views.get_comments, name='get_comments'),
     # Note: Dashboard URLs are registered in main urls.py (elina_rose_website/urls.py)
     # to avoid conflicts with Django admin
 ]

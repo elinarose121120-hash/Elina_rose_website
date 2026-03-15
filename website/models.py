@@ -107,3 +107,29 @@ class ContactMessage(models.Model):
     def __str__(self):
         return f"{self.name} - {self.subject}"
 
+
+class GalleryLike(models.Model):
+    gallery_item = models.ForeignKey(GalleryImage, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gallery_likes')
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        unique_together = ['gallery_item', 'user']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} liked {self.gallery_item}"
+
+
+class GalleryComment(models.Model):
+    gallery_item = models.ForeignKey(GalleryImage, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gallery_comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} commented on {self.gallery_item}"
+

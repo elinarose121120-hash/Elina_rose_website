@@ -1,3 +1,4 @@
+
 # Feature Documentation
 
 This directory contains detailed documentation for each feature of the Elina Rose website.
@@ -23,3 +24,4 @@ When creating a new feature document, include:
 5. **Usage**: How to use or interact with the feature
 6. **Notes**: Any important considerations or future improvements
 
+ 
