@@ -15,6 +15,13 @@
             <div class="hero-buttons animate-fade-in-delay-3">
                 <a href="{% url 'about' %}" class="btn btn-primary">Get to Know Me</a>
                 <a href="{% url 'gallery' %}" class="btn btn-secondary">View Gallery</a>
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser or user.profile.role == 'admin' %}
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-dashboard-home">Admin Dashboard</a>
+                    {% elif user.profile.role == 'manager' %}
+                        <a href="{% url 'manager_dashboard' %}" class="btn btn-dashboard-home">Manager Dashboard</a>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
         <div class="hero-image">
@@ -57,11 +64,13 @@
     <div class="container">
         <h2 class="section-title">Featured Moments</h2>
         <div class="gallery-grid">
-            {% for image in featured_gallery %}
+            {% for item in featured_gallery %}
             <div class="gallery-item">
-                <img src="{{ image.image.url }}" alt="{{ image.title }}">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                {% endif %}
                 <div class="gallery-overlay">
-                    <p>{{ image.title|default:"Special Moment" }}</p>
+                    <p>{{ item.title|default:"Special Moment" }}</p>
                 </div>
             </div>
             {% empty %}

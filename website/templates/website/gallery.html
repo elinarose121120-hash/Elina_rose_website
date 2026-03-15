@@ -13,16 +13,27 @@
 
 <section class="gallery-section">
     <div class="container">
-        {% if images %}
+        {% if gallery_items %}
         <div class="gallery-grid-full" id="gallery-grid">
-            {% for image in images %}
-            <div class="gallery-item-full" data-aos="fade-up">
-                <img src="{{ image.image.url }}" alt="{{ image.title }}" loading="lazy">
+            {% for item in gallery_items %}
+            <div class="gallery-item-full" data-aos="fade-up" data-content-type="{{ item.content_type }}">
+                {% if item.content_type == 'video' and item.video %}
+                    <video class="gallery-media" controls preload="metadata">
+                        <source src="{{ item.video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% elif item.content_type == 'image' and item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="gallery-media" loading="lazy">
+                {% else %}
+                    <div class="gallery-media" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                        No media available
+                    </div>
+                {% endif %}
                 <div class="gallery-overlay-full">
                     <div class="gallery-info">
-                        <h3>{{ image.title|default:"Special Moment" }}</h3>
-                        {% if image.description %}
-                        <p>{{ image.description }}</p>
+                        <h3>{{ item.title|default:"Special Moment" }}</h3>
+                        {% if item.description %}
+                        <p>{{ item.description }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -39,7 +50,10 @@
 
 <div class="lightbox" id="lightbox">
     <span class="lightbox-close" id="lightbox-close">&times;</span>
-    <img src="" alt="" id="lightbox-image">
+    <div id="lightbox-content">
+        <img src="" alt="" id="lightbox-image" style="display: none;">
+        <video id="lightbox-video" controls style="display: none;"></video>
+    </div>
     <div class="lightbox-nav">
         <button class="lightbox-prev" id="lightbox-prev">‹</button>
         <button class="lightbox-next" id="lightbox-next">›</button>
@@ -79,9 +93,23 @@
     }
     
     function updateLightboxImage() {
-        const img = images[currentImageIndex].querySelector('img');
-        lightboxImage.src = img.src;
-        lightboxImage.alt = img.alt;
+        const item = images[currentImageIndex];
+        const contentType = item.getAttribute('data-content-type');
+        const lightboxVideo = document.getElementById('lightbox-video');
+        
+        if (contentType === 'video') {
+            const video = item.querySelector('video');
+            lightboxImage.style.display = 'none';
+            lightboxVideo.style.display = 'block';
+            lightboxVideo.src = video.querySelector('source').src;
+            lightboxVideo.load();
+        } else {
+            const img = item.querySelector('img');
+            lightboxImage.style.display = 'block';
+            lightboxVideo.style.display = 'none';
+            lightboxImage.src = img.src;
+            lightboxImage.alt = img.alt;
+        }
     }
     
     function nextImage() {

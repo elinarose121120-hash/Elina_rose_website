@@ -1,0 +1,245 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Elina Rose{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p>Manage users and system settings</p>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="container">
+        {% if messages %}
+            <div class="dashboard-messages">
+                {% for message in messages %}
+                    <div class="message message-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="dashboard-content">
+            <div class="dashboard-card">
+                <h2>User Management</h2>
+                <p class="dashboard-subtitle">Manage user roles and permissions</p>
+                
+                <div class="users-table-wrapper">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Date Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="role-badge role-{{ user.profile.role }}">
+                                        {{ user.profile.get_role_display }}
+                                    </span>
+                                </td>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if user.id != request.user.id %}
+                                        <form method="POST" style="display: inline-block;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                            <input type="hidden" name="action" value="change_role">
+                                            <select name="role" onchange="this.form.submit()" class="role-select">
+                                                <option value="user" {% if user.profile.role == 'user' %}selected{% endif %}>User</option>
+                                                <option value="manager" {% if user.profile.role == 'manager' %}selected{% endif %}>Manager</option>
+                                                <option value="admin" {% if user.profile.role == 'admin' %}selected{% endif %}>Admin</option>
+                                            </select>
+                                        </form>
+                                    {% else %}
+                                        <span class="text-muted">Current User</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No users found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.dashboard-section {
+    padding: 100px 0;
+    min-height: 70vh;
+    background: var(--bg-light);
+}
+
+.dashboard-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.dashboard-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.dashboard-subtitle {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.dashboard-messages {
+    margin-bottom: 2rem;
+}
+
+.dashboard-messages .message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.message-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.users-table-wrapper {
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.users-table thead {
+    background: var(--accent-color);
+}
+
+.users-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.users-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.users-table tbody tr:hover {
+    background: var(--bg-light);
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.role-admin {
+    background: #dc3545;
+    color: white;
+}
+
+.role-manager {
+    background: var(--primary-color);
+    color: white;
+}
+
+.role-user {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-small {
+    padding: 6px 16px;
+    font-size: 0.875rem;
+}
+
+.text-muted {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.role-select {
+    padding: 6px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--text-dark);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.role-select:hover {
+    background: var(--accent-color);
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.2);
+}
+
+@media (max-width: 768px) {
+    .dashboard-card {
+        padding: 1.5rem;
+    }
+    
+    .users-table {
+        font-size: 0.875rem;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+

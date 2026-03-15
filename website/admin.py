@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, GalleryImage, ContactMessage
+from .models import Post, GalleryImage, ContactMessage, UserProfile
 
 
 @admin.register(Post)
@@ -21,5 +21,13 @@ class ContactMessageAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'subject', 'created_at', 'read']
     list_filter = ['read', 'created_at']
     search_fields = ['name', 'email', 'subject']
+    readonly_fields = ['created_at']
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'role', 'created_at']
+    list_filter = ['role', 'created_at']
+    search_fields = ['user__username', 'user__email']
     readonly_fields = ['created_at']
 

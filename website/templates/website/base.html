@@ -20,6 +20,16 @@
                 <li><a href="{% url 'gallery' %}" class="nav-link">Gallery</a></li>
                 <li><a href="{% url 'blog' %}" class="nav-link">Blog</a></li>
                 <li><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser or user.profile.role == 'admin' %}
+                        <li><a href="{% url 'admin_dashboard' %}" class="nav-link nav-dashboard btn-dashboard">Dashboard</a></li>
+                    {% elif user.profile.role == 'manager' %}
+                        <li><a href="{% url 'manager_dashboard' %}" class="nav-link nav-dashboard btn-dashboard">Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                {% endif %}
             </ul>
             <div class="nav-toggle" id="nav-toggle">
                 <span></span>

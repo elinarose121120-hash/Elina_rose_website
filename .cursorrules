@@ -1,0 +1,109 @@
+# Elina Rose - AI Influencer Project Context
+
+## Maintenance Note
+**IMPORTANT**: This file should be actively maintained and updated. Whenever important information is discovered during development (new patterns, conventions, decisions, architectural choices, important file locations, user preferences, or any context that would be useful for future development), it should be added to this file immediately. Keep this context file current and comprehensive.
+
+## Project Overview
+This is a Django-based website for **Elina Rose**, an AI influencer. The project presents Elina as an authentic, engaging personality with a modern, beautiful website design.
+
+**CRITICAL PRINCIPLE**: The website must feel like a real person's website, NOT an AI influencer website. Users should never feel like they're visiting an AI-generated site. The design, content, and overall experience should be indistinguishable from a genuine personal website.
+
+## Key Information
+
+### Project Type
+- **Framework**: Django 4.2
+- **Language**: Python
+- **Purpose**: AI Influencer website showcasing Elina Rose's content, gallery, blog posts, and contact information
+
+### Project Structure
+- **Main Django App**: `website/` (contains models, views, templates, admin)
+- **Project Settings**: `elina_rose_website/` (Django project configuration)
+- **Static Files**: `static/` (CSS, JS, images)
+- **Media Files**: `media/` (user-uploaded content: posts/, gallery/)
+- **Virtual Environment**: `env/` (Python virtual environment)
+- **Documentation**: `docs/` (feature-specific documentation files - each feature should have its own document)
+
+### Database Models
+1. **Post**: Blog posts with title, content, image, created_at, published status
+2. **GalleryImage**: Gallery images with title, image, description, featured status
+3. **ContactMessage**: Contact form submissions with name, email, subject, message, read status
+
+### Design Theme
+- **Color Scheme**: 
+  - Primary: #d4a574 (warm beige/gold)
+  - Secondary: #8b6f47 (darker brown)
+  - Accent: #f5e6d3 (light cream)
+- **Style**: Modern, elegant, warm, authentic
+- **Features**: Smooth animations, parallax effects, interactive UI, responsive design
+
+### Content Strategy
+- Elina Rose is presented as a creative, authentic personality
+- Content focuses on: fashion, lifestyle, travel, everyday adventures
+- Tone: Warm, engaging, authentic, relatable
+- Interests mentioned: exploring places, trying recipes, reading, spending time with loved ones
+- **IMPORTANT**: All content, design, and interactions must feel completely natural and human. Avoid anything that might signal "AI" or "virtual" - this should feel like a real person's personal website.
+
+### Important Paths
+- **Admin Panel**: http://127.0.0.1:8000/admin/
+- **Website**: http://127.0.0.1:8000/
+- **Reference Images**: `../influencer_reference/` (parent directory)
+- **Static Images**: `static/images/`
+- **Media Uploads**: `media/posts/` and `media/gallery/`
+- **Documentation Directory**: `docs/` - Contains separate documentation files for each feature. Each feature should have its own markdown file documenting implementation, usage, and important details.
+
+### Development Workflow
+- Virtual environment: `env/` (already set up)
+- Activate: `source env/bin/activate`
+- Run server: `python manage.py runserver`
+- Migrations: `python manage.py migrate`
+- Static files: `python manage.py collectstatic --noinput`
+
+### Default Preferences
+- Always maintain the warm, elegant aesthetic
+- Keep content authentic and engaging
+- Ensure responsive design for all features
+- Use Django best practices
+- Maintain clean, readable code structure
+- **PRIORITY**: Never make it obvious this is an AI influencer site - it must feel like a real person's website in every aspect
+
+### Notes
+- This is an AI influencer project - Elina Rose is a virtual personality
+- Images can be sourced from `influencer_reference` folder
+- **CRITICAL**: The website should NEVER feel like an AI influencer website. It must appear and feel like a real person's authentic personal website. Users should not be able to tell it's AI-generated.
+- Focus on creating engaging, relatable content that feels completely natural and human
+
+## Development Discoveries & Updates
+*This section should be updated whenever important information is discovered during development:*
+- Add new patterns, conventions, or architectural decisions here
+- Document important file locations or code structures discovered
+- Note any user preferences or requirements that emerge
+- Record any technical decisions or trade-offs made
+- Keep track of important context that would help future development
+
+## Documentation Standards
+- **Feature Documentation**: Each new feature should have a dedicated markdown file in the `docs/` directory
+- **Naming**: Use descriptive, lowercase filenames with hyphens (e.g., `gallery-feature.md`, `blog-posts.md`)
+- **Content**: Include overview, implementation details, files involved, key components, usage, and notes
+- **Update**: When implementing or modifying features, create or update the corresponding documentation file in `docs/`
+
+## Testing Requirements
+- **CRITICAL**: All new features and changes MUST have corresponding test cases
+- **Test Location**: All tests are in `website/tests/` directory
+- **Test Files**: 
+  - `test_urls.py` - Tests all URL routing and accessibility (17 tests)
+  - `test_views.py` - Tests view functionality and edge cases (13 tests)
+  - `test_authentication.py` - Tests authentication and role-based access (10 tests)
+  - `test_dashboards.py` - Tests dashboard functionality (8 tests)
+  - `test_models.py` - Tests model creation and relationships (8 tests)
+- **Total**: 56 comprehensive tests covering all functionality
+- **Test Coverage**: Every URL, view, and major functionality must have test cases
+- **Update Tests**: When adding new URLs, views, or features, immediately add/update test cases
+- **Run Tests**: Always run tests before committing: `python manage.py test`
+- **Test Edge Cases**: Include tests for error conditions, missing data, and edge cases (e.g., gallery items without images, missing file attributes)
+- **No Breaking Changes**: All existing tests must pass before adding new features
+- **Test Patterns**: 
+  - Profiles are auto-created - update roles, don't create new profiles
+  - Use SimpleUploadedFile for file upload tests
+  - Always test both success and failure cases
+- **Documentation**: See `docs/testing.md` for detailed testing guide
+
