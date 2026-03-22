@@ -11,10 +11,11 @@ Use a **managed PostgreSQL** database (Render PostgreSQL or external) and connec
 ## Render setup
 
 1. In the Render dashboard, create a **PostgreSQL** instance (or use an existing one).
-2. Link it to your web service so Render injects `DATABASE_URL`, or set `DATABASE_URL` manually on the web service (Internal Database URL from the Postgres service).
-3. Redeploy. Run migrations on deploy, e.g. build or start command includes: `python manage.py migrate` (often in a `render.yaml` or shell script).
+2. **Recommended:** In your **Web Service** → **Environment**, add **`DATABASE_URL`** with the value from **PostgreSQL** → **Connections** → **Internal Database URL** (or link the DB to the service so Render sets `DATABASE_URL` for you).
+3. **Alternative:** Set discrete variables from the same Connections screen (no secrets in git): `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`. Example host format: `dpg-d705lkbuibrs73e47qhg-a` — use the exact host shown on your database’s Connections page if the app cannot connect.
+4. Redeploy. Run migrations on deploy, e.g. build or start command includes: `python manage.py migrate` (often in a `render.yaml` or shell script).
 
-Local development continues to use SQLite when `DATABASE_URL` is not set.
+Local development continues to use SQLite when neither `DATABASE_URL` nor the discrete Postgres variables are set. See `.env.example` for a template (copy to `.env` locally and fill in values; do not commit `.env`).
 
 ## Media files
 

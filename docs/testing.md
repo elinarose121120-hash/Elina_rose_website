@@ -14,6 +14,12 @@ Comprehensive test suite for the Elina Rose website. All tests are located in `w
 
 ## Running Tests
 
+`SECRET_KEY` must be set (e.g. in `.env` at the project root, or export it for one-off runs). For CI or scripts without `.env`:
+
+```bash
+SECRET_KEY=test-only-not-for-production python manage.py test website.tests
+```
+
 ### Run All Tests
 ```bash
 python manage.py test website.tests

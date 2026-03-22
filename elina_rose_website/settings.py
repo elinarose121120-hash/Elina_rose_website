@@ -2,19 +2,30 @@
 Django settings for elina_rose_website project.
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 from elina_rose_website.database import get_databases
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / '.env')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-elina-rose-website-dev-key-change-in-production'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        'SECRET_KEY is not set. Add it to your environment or a .env file in the project root '
+        '(see .env.example). On Render, set SECRET_KEY in the web service Environment.'
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
