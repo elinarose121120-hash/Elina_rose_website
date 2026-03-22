@@ -3,7 +3,8 @@ Django settings for elina_rose_website project.
 """
 
 from pathlib import Path
-import os
+
+from elina_rose_website.database import get_databases
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -67,12 +68,8 @@ WSGI_APPLICATION = 'elina_rose_website.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Local dev: SQLite. Production (e.g. Render): set DATABASE_URL — see docs/deployment-database.md
+DATABASES = get_databases(BASE_DIR)
 
 
 # Password validation

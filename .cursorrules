@@ -79,6 +79,7 @@ This is a Django-based website for **Elina Rose**, an AI influencer. The project
 - Note any user preferences or requirements that emerge
 - Record any technical decisions or trade-offs made
 - Keep track of important context that would help future development
+- **Production DB (Render / PaaS)**: Ephemeral filesystem wipes SQLite on deploy. Use managed PostgreSQL and set `DATABASE_URL`; config is in `elina_rose_website/database.py` (`get_databases`). See `docs/deployment-database.md`. Media on disk has the same limitation unless using persistent disk or object storage.
 
 ## Documentation Standards
 - **Feature Documentation**: Each new feature should have a dedicated markdown file in the `docs/` directory
@@ -95,7 +96,7 @@ This is a Django-based website for **Elina Rose**, an AI influencer. The project
   - `test_authentication.py` - Tests authentication and role-based access (10 tests)
   - `test_dashboards.py` - Tests dashboard functionality (8 tests)
   - `test_models.py` - Tests model creation and relationships (8 tests)
-- **Total**: 56 comprehensive tests covering all functionality
+- **Total**: Run `python manage.py test` for current count; includes `test_database_config.py` for DATABASE_URL / SQLite vs Postgres
 - **Test Coverage**: Every URL, view, and major functionality must have test cases
 - **Update Tests**: When adding new URLs, views, or features, immediately add/update test cases
 - **Run Tests**: Always run tests before committing: `python manage.py test`
